@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Fraud & Phishing Detection Engine</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="navbar">
+      <div class="brand">
+        <div class="shield-icon">🛡️</div>
+        <div>
+          <h1 class="logo-title">URL Fraud Detection Engine</h1>
+          <p class="logo-subtitle">Lexical ML Classifier & Heuristics Service</p>
+        </div>
+      </div>
+      <div class="nav-badges">
+        <span class="badge badge-success" id="model-status-badge">
+          <span class="dot"></span> {{ metadata.model_name | default('Random Forest') | replace('_', ' ') | title }} Active
+        </span>
+        <span class="badge badge-outline">Threshold: {{ metadata.threshold | default('0.7405') }}</span>
+        <a href="/api/v1/health" target="_blank" class="nav-link">Health API</a>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-nav">
+      <button class="tab-btn active" data-tab="single-scan">Single URL Scanner</button>
+      <button class="tab-btn" data-tab="batch-scan">Batch Scanner</button>
+      <button class="tab-btn" data-tab="model-info">Model & Metrics</button>
+      <button class="tab-btn" data-tab="api-guide">API Reference</button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="tab-content-container">
+      <!-- TAB 1: Single URL Scanner -->
+      <section id="single-scan" class="tab-panel active">
+        <div class="card scan-input-card">
+          <h2>Inspect URL Security</h2>
+          <p class="card-desc">Evaluate URL lexical structure, entropy, suspicious patterns, and ML fraud likelihood in real-time.</p>
+          
+          <form id="single-scan-form" class="scan-form">
+            <div class="input-group">
+              <input type="text" id="target-url" placeholder="https://example.com/login-verification..." required autocomplete="off">
+              <button type="submit" id="btn-scan" class="btn btn-primary">
+                <span class="btn-text">Analyze URL</span>
+                <span class="btn-spinner hidden"></span>
+              </button>
+            </div>
+          </form>
+
+          <div class="preset-links">
+            <span class="preset-label">Quick Test:</span>
+            <button class="chip" data-url="https://www.google.com/search?q=cybersecurity">Clean Domain</button>
+            <button class="chip" data-url="http://192.168.1.55/bank-security-update/login">IP Hostname Phishing</button>
+            <button class="chip" data-url="https://bit.ly/claim-urgent-reward-now">URL Shortener Scam</button>
+            <button class="chip" data-url="https://secure-account-verification.login.update.bank.com@malicious-node.ru/auth">Credential Spoofing</button>
+          </div>
+        </div>
+
+        <!-- Single Scan Result Card -->
+        <div id="single-result" class="card result-card hidden">
+          <div class="result-header">
+            <div>
+              <span id="res-level-badge" class="risk-badge">SAFE</span>
+              <h3 id="res-verdict" class="verdict-title">CLEAN URL</h3>
+              <p id="res-url" class="scanned-url-text"></p>
+            </div>
+            <div class="gauge-container">
+              <div class="gauge-circle" id="gauge-circle">
+                <span id="gauge-score">0%</span>
+              </div>
+              <span class="gauge-label">Fraud Probability</span>
+            </div>
+          </div>
+
+          <div id="res-advice" class="advice-box"></div>
+
+          <!-- Threat Indicators Section -->
+          <div class="indicators-section">
+            <h4>Security Indicators & Heuristics (<span id="ind-count">0</span>)</h4>
+            <div id="indicators-list" class="indicators-grid"></div>
+          </div>
+
+          <!-- Feature Accordion -->
+          <div class="accordion">
+            <button type="button" class="accordion-header" id="toggle-features-btn">
+              <span>View Extracted Lexical Features (24)</span>
+              <span class="arrow">▼</span>
+            </button>
+            <div class="accordion-body hidden" id="features-table-container">
+              <table class="data-table" id="features-table">
+                <thead>
+                  <tr>
+                    <th>Feature Name</th>
+                    <th>Value</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody id="features-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Footer Actions -->
+          <div class="result-footer">
+            <span class="latency-info">⏱️ Inference latency: <strong id="res-latency">0</strong> ms</span>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-open-feedback">Report Misclassification</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: Batch Scanner -->
+      <section id="batch-scan" class="tab-panel">
+        <div class="card">
+          <h2>High-Throughput Batch Scanner</h2>
+          <p class="card-desc">Scan up to 500 URLs simultaneously using vectorised matrix inference.</p>
+          
+          <form id="batch-scan-form">
+            <textarea id="batch-urls-input" rows="6" placeholder="Enter one URL per line:
+https://example.com/safe
+https://tinyurl.com/verify-now
+http://10.0.0.1/auth/billing
+https://github.com/"></textarea>
+            <div class="batch-form-actions">
+              <button type="submit" id="btn-batch-scan" class="btn btn-primary">Scan Batch Matrix</button>
+              <button type="button" id="btn-clear-batch" class="btn btn-secondary">Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Batch Summary Cards -->
+        <div id="batch-summary" class="batch-metrics-grid hidden">
+          <div class="metric-card">
+            <span class="metric-label">Total Scanned</span>
+            <span class="metric-value" id="b-metric-total">0</span>
+          </div>
+          <div class="metric-card danger">
+            <span class="metric-label">Flagged Fraudulent</span>
+            <span class="metric-value" id="b-metric-flagged">0</span>
+          </div>
+          <div class="metric-card success">
+            <span class="metric-label">Clean URLs</span>
+            <span class="metric-value" id="b-metric-clean">0</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Average Risk</span>
+            <span class="metric-value" id="b-metric-avg">0%</span>
+          </div>
+        </div>
+
+        <!-- Batch Table -->
+        <div id="batch-results-container" class="card hidden">
+          <h3>Batch Results</h3>
+          <div class="table-responsive">
+            <table class="data-table" id="batch-table">
+              <thead>
+                <tr>
+                  <th>Status</th>
+                  <th>Risk Level</th>
+                  <th>Probability</th>
+                  <th>URL</th>
+                  <th>Indicators</th>
+                </tr>
+              </thead>
+              <tbody id="batch-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: Model Information -->
+      <section id="model-info" class="tab-panel">
+        <div class="grid-2col">
+          <div class="card">
+            <h3>Active ML Model Details</h3>
+            <ul class="info-list">
+              <li><strong>Algorithm:</strong> Random Forest Classifier (300 estimators, max_depth=20)</li>
+              <li><strong>Tuned Decision Threshold:</strong> <span class="highlight">{{ metadata.threshold | default('0.7405') }}</span></li>
+              <li><strong>Trained Dataset Rows:</strong> {{ metadata.trained_rows | default('87,581') }}</li>
+              <li><strong>Feature Matrix Dimension:</strong> 24 Lexical / Structural Features</li>
+              <li><strong>Positive Class:</strong> is_spam / fraud link</li>
+            </ul>
+
+            <h4 style="margin-top: 1.5rem;">Winning Model Test Metrics (20% Holdout)</h4>
+            <div class="metrics-pill-group">
+              <div class="metric-pill"><span>ROC-AUC</span><strong>0.871</strong></div>
+              <div class="metric-pill"><span>Accuracy</span><strong>89.8%</strong></div>
+              <div class="metric-pill"><span>Recall</span><strong>59.1%</strong></div>
+              <div class="metric-pill"><span>F1-Score</span><strong>0.269</strong></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Candidate Benchmark Comparison</h3>
+            <p class="card-desc">Evaluated families during training pipeline selection:</p>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>ROC-AUC</th>
+                  <th>Accuracy</th>
+                  <th>F1</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="highlight-row">
+                  <td><strong>Random Forest (Selected)</strong></td>
+                  <td>0.8706</td>
+                  <td>89.8%</td>
+                  <td>0.269</td>
+                </tr>
+                <tr>
+                  <td>Gradient Boosting</td>
+                  <td>0.8559</td>
+                  <td>97.0%</td>
+                  <td>0.193</td>
+                </tr>
+                <tr>
+                  <td>Logistic Regression</td>
+                  <td>0.8199</td>
+                  <td>75.3%</td>
+                  <td>0.168</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: API Guide -->
+      <section id="api-guide" class="tab-panel">
+        <div class="card">
+          <h3>Backend API Endpoints</h3>
+          <p class="card-desc">Integrate these JSON endpoints directly into your frontend, browser extensions, or security gateways.</p>
+          
+          <div class="code-example-block">
+            <h4>1. Check Single URL</h4>
+            <pre><code>curl -X POST "http://localhost:5000/api/v1/check-url" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com/verify-login", "include_features": true}'</code></pre>
+          </div>
+
+          <div class="code-example-block">
+            <h4>2. Check Batch URLs</h4>
+            <pre><code>curl -X POST "http://localhost:5000/api/v1/check-urls" \
+  -H "Content-Type: application/json" \
+  -d '{"urls": ["https://google.com", "http://192.168.1.1/pay"]}'</code></pre>
+          </div>
+
+          <div class="code-example-block">
+            <h4>3. Submit False Positive / Retraining Feedback</h4>
+            <pre><code>curl -X POST "http://localhost:5000/api/v1/reports" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://newsletter-link.com", "reported_as": "FALSE_POSITIVE"}'</code></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal hidden">
+      <div class="modal-content card">
+        <div class="modal-header">
+          <h3>Report Misclassification</h3>
+          <button type="button" class="close-btn" id="close-modal">&times;</button>
+        </div>
+        <form id="feedback-form">
+          <div class="form-group">
+            <label>URL:</label>
+            <input type="text" id="fb-url" readonly>
+          </div>
+          <div class="form-group">
+            <label>Report Classification As:</label>
+            <select id="fb-type" required>
+              <option value="FALSE_POSITIVE">False Positive (URL is Legitimate)</option>
+              <option value="FALSE_NEGATIVE">False Negative (URL is Malicious/Phishing)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Notes / Context:</label>
+            <textarea id="fb-notes" rows="3" placeholder="Optional notes for model retraining..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit Report</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

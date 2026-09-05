@@ -1,0 +1,67 @@
+{
+  "model_name": "random_forest",
+  "needs_scaling": false,
+  "feature_names": [
+    "url_length",
+    "domain_length",
+    "path_length",
+    "query_length",
+    "num_dots",
+    "num_hyphens",
+    "num_underscores",
+    "num_slashes",
+    "num_digits",
+    "num_special_chars",
+    "num_params",
+    "num_subdomains",
+    "digit_ratio",
+    "special_char_ratio",
+    "shannon_entropy",
+    "has_ip_address",
+    "has_https",
+    "has_at_symbol",
+    "has_double_slash",
+    "has_shortener",
+    "suspicious_word_count",
+    "starts_with_https",
+    "hostname_has_digits",
+    "tld_length"
+  ],
+  "metrics": {
+    "accuracy": 0.8980989895530056,
+    "precision": 0.17444326617179215,
+    "recall": 0.5906642728904847,
+    "f1": 0.2693409742120344,
+    "roc_auc": 0.8706203317130179,
+    "train_seconds": 16.9
+  },
+  "all_candidate_metrics": {
+    "logistic_regression": {
+      "accuracy": 0.7528686418907348,
+      "precision": 0.0942340791738382,
+      "recall": 0.7863554757630161,
+      "f1": 0.16829971181556197,
+      "roc_auc": 0.819878222282443,
+      "train_seconds": 0.5
+    },
+    "random_forest": {
+      "accuracy": 0.8980989895530056,
+      "precision": 0.17444326617179215,
+      "recall": 0.5906642728904847,
+      "f1": 0.2693409742120344,
+      "roc_auc": 0.8706203317130179,
+      "train_seconds": 16.9
+    },
+    "gradient_boosting": {
+      "accuracy": 0.9704858137808986,
+      "precision": 0.7380952380952381,
+      "recall": 0.11131059245960502,
+      "f1": 0.1934477379095164,
+      "roc_auc": 0.8558779131804479,
+      "train_seconds": 26.3
+    }
+  },
+  "recommended_threshold": 0.7405094455956458,
+  "positive_class": "is_spam / fraud link",
+  "trained_rows": 87581
+}
